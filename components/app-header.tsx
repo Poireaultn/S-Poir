@@ -6,7 +6,7 @@ import { NavigationMenu, NavigationMenuItem, NavigationMenuList, navigationMenuT
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { type BreadcrumbItem, type NavItem} from '@/types';
+import {type NavItem} from '@/types';
 import Link from 'next/link';
 import { LayoutGrid, Menu, Linkedin, SquareUserRound, BriefcaseBusiness, House, PiggyBank, Mail, ChevronDown, ChevronUp } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
@@ -68,12 +68,12 @@ const rightNavItems: NavItem[] = [
 
 const activeItemStyles = 'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100';
 
-interface AppHeaderProps {
-    breadcrumbs?: BreadcrumbItem[];
-}
-
-export function Header({ breadcrumbs = [] }: AppHeaderProps) {
+export function Header() {
     const pathname = usePathname();
+
+    // État pour stocker quel menu est ouvert, null = aucun
+    const [openMenu, setOpenMenu] = useState<string | null>(null);
+
     return (
         <>
             <div className="sticky top-0 z-50 bg-white border-b border-sidebar-border/80">
@@ -96,43 +96,42 @@ export function Header({ breadcrumbs = [] }: AppHeaderProps) {
                                         <div className="flex flex-col space-y-4">
                                             {mainNavItems.map((item) => {
                                                 const hasChildren = item.list && item.list.length > 0;
-                                                const [open, setOpen] = useState(false);
+                                                const isOpen = openMenu === item.title;
 
                                                 return (
-                                                <div key={item.title} className="flex flex-col">
-                                                    <div
-                                                    className="flex items-center justify-between space-x-2 font-medium cursor-pointer"
-                                                    onClick={() => hasChildren ? setOpen(!open) : null}
-                                                    >
-                                                    
-                                                    {hasChildren ? (
-                                                        <div className="flex items-center space-x-2">
-                                                            {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
-                                                            <span>{item.title}</span>
-                                                            <span className="text-xs text-gray-500">{open ? <ChevronUp/> : <ChevronDown/>}</span>
-                                                        </div>                                                        
-                                                    ) : (
-                                                        <Link href={item.href} className="flex items-center space-x-2">
-                                                            {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
-                                                            <span>{item.title}</span>
-                                                        </Link>
-                                                    )}
-                                                    </div>
-
-                                                    {hasChildren && open && (
-                                                    <div className="ml-6 mt-2 flex flex-col space-y-1">
-                                                        {item.list!.map((subItem) => (
-                                                        <Link
-                                                            key={subItem.href}
-                                                            href={subItem.href}
-                                                            className="text-muted-foreground hover:text-foreground transition"
+                                                    <div key={item.title} className="flex flex-col">
+                                                        <div
+                                                            className="flex items-center justify-between space-x-2 font-medium cursor-pointer"
+                                                            onClick={() => hasChildren ? setOpenMenu(isOpen ? null : item.title) : null}
                                                         >
-                                                            {subItem.title}
-                                                        </Link>
-                                                        ))}
+                                                            {hasChildren ? (
+                                                                <div className="flex items-center space-x-2">
+                                                                    {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
+                                                                    <span>{item.title}</span>
+                                                                    <span className="text-xs text-gray-500">{isOpen ? <ChevronUp/> : <ChevronDown/>}</span>
+                                                                </div>                                                        
+                                                            ) : (
+                                                                <Link href={item.href} className="flex items-center space-x-2">
+                                                                    {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
+                                                                    <span>{item.title}</span>
+                                                                </Link>
+                                                            )}
+                                                        </div>
+
+                                                        {hasChildren && isOpen && (
+                                                            <div className="ml-6 mt-2 flex flex-col space-y-1">
+                                                                {item.list!.map((subItem) => (
+                                                                    <Link
+                                                                        key={subItem.href}
+                                                                        href={subItem.href}
+                                                                        className="text-muted-foreground hover:text-foreground transition"
+                                                                    >
+                                                                        {subItem.title}
+                                                                    </Link>
+                                                                ))}
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                    )}
-                                                </div>
                                                 );
                                             })}
                                         </div>
